@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Log</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script src="/js/jquery-3.2.1.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+</head>
+<body>
+
+<script>
+    $(function () {
+        $.ajax({
+            type: "POST",
+            url: "/log.html",
+            data: {},
+            success: function(msg){
+                $("body").append(msg);
+            }
+        });
+    });
+</script>
+</body>
+</html>
