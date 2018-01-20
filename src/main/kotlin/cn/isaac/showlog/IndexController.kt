@@ -12,6 +12,6 @@ class IndexController {
 
     @RequestMapping("/")
     fun index(): String {
-        return "log"
+        return "index"
     }
 }

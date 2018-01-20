@@ -7,19 +7,23 @@
     <script src="/js/jquery-3.2.1.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
 </head>
-<body>
-
+<body style="background-color: #333333;color: #9d9d9d">
+<div class="container">${result}</div>
 <script>
     $(function () {
+        setInterval("getLog()",3000);
+    });
+
+    function getLog() {
         $.ajax({
             type: "POST",
-            url: "/log.html",
+            url: "/getlog.html",
             data: {},
             success: function(msg){
-                $("body").append(msg);
+                $(".container").append(msg);
             }
         });
-    });
+    }
 </script>
 </body>
 </html>
