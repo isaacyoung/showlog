@@ -11,16 +11,28 @@
 <div class="container">${result}</div>
 <script>
     $(function () {
-        setInterval("getLog()",3000);
+        setInterval("getLog()",5000);
     });
 
     function getLog() {
+        var url = "/getlog/${id!}";
+        <#if isRemote??>
+        var isRemote = "${isRemote?string('true','false')}";
+        if (isRemote == 'false') {
+            url = "/local/getlog/${id!}";
+        }
+        </#if>
         $.ajax({
             type: "POST",
-            url: "/getlog.html",
+            url: url,
             data: {},
             success: function(msg){
-                $(".container").append(msg);
+                if (msg != "") {
+                    $(".container").append(msg);
+                }
+                if ($(".container p").length > 1000) {
+                    $(".container p:lt(500)").remove();
+                }
             }
         });
     }

@@ -2,77 +2,49 @@ package cn.isaac.showlog
 
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.ResponseBody
-import org.springframework.web.bind.annotation.RestController
-import java.io.File
-import java.io.RandomAccessFile
 import java.util.regex.Pattern
 import javax.servlet.http.HttpServletRequest
 
 /**
- *
+ * 服务器日志
  * create by isaac at 2018/1/19 8:58
  */
 @Controller
 class LogController {
 
-    @RequestMapping("/log")
-    fun log(request: HttpServletRequest, model: Model): String {
-        val s = "E:\\home\\log\\wechat\\2018-01-07.log"
-        val file = File(s)
-        val size = file.length()
-        var point = size - 5000
-        if (point < 0) {
-            point = 0
+    @RequestMapping("/log/{id}")
+    fun log(@PathVariable id: String, request: HttpServletRequest, model: Model): String {
+        val server = getServer(id) ?: return "log"
+        val (size,content) = connect(id)
+        if (content == "") {
+            return "log"
         }
 
-        val read = RandomAccessFile(file, "r")
-        read.seek(point)
-        var result = ""
-        var tmp: String?
-        do {
-            tmp = read.readLine()
-            tmp?.let {
-                var str = "${String(tmp.toByteArray(Charsets.ISO_8859_1),Charsets.UTF_8)}"
-                result += when {
-                    str.contains("Exception:") -> "<p style='color:#CC3399'>$str</p>"
-                    str.trim().startsWith("at ") -> "<p style='color:#CC3399'>$str</p>"
-                    isContainChinese(str) -> "<p style='color:#0099CC'>$str</p>"
-                    else -> "$str<br>"
-                }
-            }
-        } while (tmp != null)
-        request.session.setAttribute("logPoint", size)
+        val result = toHtml(content)
+
+        request.session.setAttribute("logPoint$id", size)
         model.addAttribute("result",result)
+        model.addAttribute("id", id)
+        model.addAttribute("isRemote", server.isRemote)
         return "log"
     }
 
-    @RequestMapping("/getlog")
+    @RequestMapping("/getlog/{id}")
     @ResponseBody
-    fun more(request: HttpServletRequest): String {
-        val s = "E:\\home\\log\\wechat\\2018-01-07.log"
-        val file = File(s)
-        val size = file.length()
-        var point = request.session.getAttribute("logPoint")
+    fun more(@PathVariable id: String, request: HttpServletRequest): String {
+        var point = request.session.getAttribute("logPoint$id")
+        point?:let { point = 0L }
+        val (size,content) = connect(id, point as Long)
+        if (content == "") {
+            return content
+        }
 
-        val read = RandomAccessFile(file, "r")
-        read.seek(point as Long)
-        var result = ""
-        var tmp: String?
-        do {
-            tmp = read.readLine()
-            tmp?.let {
-                var str = "${String(tmp.toByteArray(Charsets.ISO_8859_1),Charsets.UTF_8)}"
-                result += when {
-                    str.contains("Exception:") -> "<p style='color:#CC3399'>$str</p>"
-                    str.trim().startsWith("at ") -> "<p style='color:#CC3399'>$str</p>"
-                    isContainChinese(str) -> "<p style='color:#0099CC'>$str</p>"
-                    else -> "$str<br>"
-                }
-            }
-        } while (tmp != null)
-        request.session.setAttribute("logPoint", size)
+        val result = toHtml(content)
+
+        request.session.setAttribute("logPoint$id", size)
 
         return result
     }
@@ -81,5 +53,30 @@ class LogController {
         val p = Pattern.compile("[\u4e00-\u9fa5]")
         val m = p.matcher(str)
         return m.find()
+    }
+
+    fun toHtml(content: String): String {
+        if (content == "") {
+            return content
+        }
+
+        var result = ""
+        var temp = ""
+        content.forEach {
+            when (it) {
+                '\n' -> {
+                    temp += "<br>"
+                    result += when {
+                        temp.contains("Exception:") -> "<p style='color:#CC3399'>$temp</p>"
+                        temp.trim().startsWith("at ") -> "<p style='color:#CC3399'>$temp</p>"
+                        isContainChinese(temp) -> "<p style='color:#0099CC'>$temp</p>"
+                        else -> "<p>$temp</p>"
+                    }
+                    temp = ""
+                }
+                else -> temp += it
+            }
+        }
+        return result
     }
 }
