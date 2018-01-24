@@ -1,7 +1,7 @@
 package cn.isaac.showlog
 
 import com.jcraft.jsch.ChannelSftp
-import com.jcraft.jsch.ChannelSftp.*
+import com.jcraft.jsch.ChannelSftp.RESUME
 import com.jcraft.jsch.JSch
 import java.io.ByteArrayOutputStream
 
@@ -38,7 +38,9 @@ fun connect(id: String, begin: Long = 0): Result {
         skip = attr.size - 20000
     }
     channel.get(file,output,null, RESUME,skip)
-    val result = output.toString()
+    var result = output.toString()
+    result = result.replace("<","&lt;")
+    result = result.replace(">","&gt;")
 
     channel.disconnect()
 

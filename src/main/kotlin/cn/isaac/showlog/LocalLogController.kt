@@ -37,6 +37,8 @@ class LocalLogController {
             tmp = read.readLine()
             tmp?.let {
                 var str = "${String(tmp.toByteArray(Charsets.ISO_8859_1),Charsets.UTF_8)}"
+                str = str.replace("<","&lt;")
+                str = str.replace(">","&gt;")
                 result += when {
                     str.contains("Exception:") -> "<p style='color:#CC3399'>$str</p>"
                     str.trim().startsWith("at ") -> "<p style='color:#CC3399'>$str</p>"
@@ -67,6 +69,8 @@ class LocalLogController {
             tmp = read.readLine()
             tmp?.let {
                 var str = "${String(tmp.toByteArray(Charsets.ISO_8859_1),Charsets.UTF_8)}"
+                str = str.replace("<","&lt;")
+                str = str.replace(">","&gt;")
                 result += when {
                     str.contains("Exception:") -> "<p style='color:#CC3399'>$str</p>"
                     str.trim().startsWith("at ") -> "<p style='color:#CC3399'>$str</p>"
